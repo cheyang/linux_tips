@@ -1,9 +1,9 @@
-SwarmKit的架构概览
+# SwarmKit的架构概览
 =====================
 
 [TOC]
 
-概述
+## 概述
 -------------
 In this article we look at the overall Architecture of Swarmkit. Swarmkit is a distributed resource manager. This can be bundled to run Docker tasks or other types of Tasks.
 
@@ -27,7 +27,8 @@ Distributed: SwarmKit uses the Raft Consensus Algorithm in order to coordinate a
 Secure: Node communication and membership within a Swarm are secure out of the box. SwarmKit uses mutual TLS for node authentication, role authorization and transport encryption, automating both certificate issuance and rotation.
 Simple: SwarmKit is operationally simple and minimizes infrastructure dependencies. It does not need an external database to operate.
 
-Swarmkit是一个分布式集群调度平台
+Swarmkit是一个分布式集群调度平台,它的默认调度单元是Docker容器，但其实也可以调用自定的task。
 
-功能集
+
+基本概念
 -------------
