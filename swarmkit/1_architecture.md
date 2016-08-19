@@ -39,7 +39,7 @@ Dispatcher（分发器）
 
 Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，session的管理以及每个task的部署和状态追踪。
 
-(manager.png)
+![](manager.png)
 
 
 global services
