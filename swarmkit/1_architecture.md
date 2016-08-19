@@ -5,28 +5,6 @@
 
 ## 概述
 -------------
-In this article we look at the overall Architecture of Swarmkit. Swarmkit is a distributed resource manager. This can be bundled to run Docker tasks or other types of Tasks.
-
-Main components of Swarmkit:
-
-Swarmkit is composed two types of Nodes
-
-Managers : Responsible for Assigning Tasks to Workers
-Workers : Place where actual tasks run
-Following entities are scheduled on Workerss
-
-Tasks is the unit of work performed by a Worker.
-Service is a bundle of Tasks which are run as a single unit and monitored by the Manager
---------
-
-SwarmKit is a toolkit for orchestrating distributed systems at any scale. It includes primitives for node discovery, raft-based consensus, task scheduling and more.
-
-Its main benefits are:
-
-Distributed: SwarmKit uses the Raft Consensus Algorithm in order to coordinate and does not rely on a single point of failure to perform decisions.
-Secure: Node communication and membership within a Swarm are secure out of the box. SwarmKit uses mutual TLS for node authentication, role authorization and transport encryption, automating both certificate issuance and rotation.
-Simple: SwarmKit is operationally simple and minimizes infrastructure dependencies. It does not need an external database to operate.
-
 Swarmkit是一个分布式集群调度平台,它的默认调度单元是Docker容器，但其实也可以调用自定的task。作为docker一个新的集群调度开源项目，它借鉴了许多k8s和marthon的优秀理念，也被docker公司寄予了厚望，内嵌到了docker daemon中。
 
 现在我们就来理解一下swarmd的基本概念模型：
@@ -59,10 +37,9 @@ Scheduler负责将Service中定义的task调度到可用的Node上
 
 Dispatcher（分发器）
 
-Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，session的管理以及每个task的状态追踪。
+Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，session的管理以及每个task的部署和状态追踪。
 
-
-Node struct implements the node functionality for a member of a swarm cluster. Node handles workloads (as a worker) and may also run as a manager.
+(manager.png)
 
 
 global services
