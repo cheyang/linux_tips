@@ -47,7 +47,20 @@ _Manager_ 负责接收用户创建的 _Service_, 并且根据 service的定义�
 
 Orchestrator(编排器)
 
-Orchestrator确保
+Orchestrator负责确保每个service中的task按照service定义正确的运行
+
+Allocator(全局资源分配器)
+
+Allocator负责分配全局资源，比如overlay网络的ip地址和分布式存储，目前只是实现是vip地址分配
+
+scheduler(调度器)
+
+Scheduler负责将Service中定义的task调度到可用的Node上
+
+Dispatcher（分发器）
+
+Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，session的管理以及每个task的状态追踪。
+
 
 Node struct implements the node functionality for a member of a swarm cluster. Node handles workloads (as a worker) and may also run as a manager.
 
