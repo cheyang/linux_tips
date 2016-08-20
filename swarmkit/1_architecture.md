@@ -7,9 +7,23 @@
 -------------
 Swarmkit是一个分布式集群调度平台,它的默认调度单元是Docker容器，但其实也可以调用自定的task。作为docker一个新的集群调度开源项目，它借鉴了许多k8s和marthon的优秀理念，也被docker公司寄予了厚望，内嵌到了docker daemon中。
 
-现在我们就来理解一下swarmd的基本概念模型：
+现在我们就来理解一下swarmd的基本概念模型和架构简介：
 
-### 核心概念
+### 概念模型
+
+#### Service (服务)
+
+一个service包含完成同一项工作的一组Task，它分为
+
+Golbal(全局服务模式)， 需要每个node上部署一个task实例，有点像k8s中的daemon set，用来部署向gluster等分布式存储和fluented日志搜集模块这种类型的基础服务  
+
+Replicated(重复服务模式)， 需要按照最终用户指定的数量尽可能在不同的节点上部署task的实例
+
+#### Task (任务)
+
+作为Swarmkit中的基本调度单元， Task承担了创建docker容器，并且运行指定命令的责任（docker run）。实际上在未来，task的工作可以更灵活和插件化。
+
+### 架构综述
 
 #### Cluster(集群)
 
@@ -17,35 +31,33 @@ Swarmkit是一个分布式集群调度平台,它的默认调度单元是Docker�
 
 #### Node（节点）
 
-_Node_ 是集群的基本组成单元，其身份分为Manager和Agent
+_Node_ 是集群的基本组成单元，其身份分为Manager和Worker
 
 #### Manager(管理器)
 
 _Manager_ 负责接收用户创建的 _Service_, 并且根据 service的定义创建一组task，根据task所需分配计算资源和选择运行节点，并且将task调度到指定的节点。而manager含有以下子模块：
 
-#### Orchestrator(编排器)
+##### Orchestrator(编排器)
 
 Orchestrator负责确保每个service中的task按照service定义正确的运行
 
-#### Allocator(全局资源分配器)
+##### Allocator(资源分配器)
 
-Allocator负责分配全局资源，比如overlay网络的ip地址和分布式存储，目前只是实现是vip地址分配
+Allocator主要负责分配资源，而这种资源通常为全局的，比如overlay网络的ip地址和分布式存储，目前只是实现是vip地址分配。未来一些自定义资源也可以通过Allocator来分配。
 
-#### scheduler(调度器)
+##### scheduler(调度器)
 
 Scheduler负责将Service中定义的task调度到可用的Node上
 
-#### Dispatcher（分发器）
+##### Dispatcher（分发器）
 
 Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，session的管理以及每个task的部署和状态追踪。
 
 ![](manager.png)
 
+#### Agent
 
-global services
-
-全局服务模式， 需要每个node上部署一个task实例，有点像k8s中的daemon set，用来部署向gluster等分布式存储和fluented日志搜集模块这种类型的基础服务
+_Agent_ 负责管理Node，部署Task以及追踪Task的状态，并且将Task的状态汇报给Manager。
 
 
-基本概念
--------------
+
