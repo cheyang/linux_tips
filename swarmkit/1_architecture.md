@@ -37,6 +37,19 @@ _Node_ 是集群的基本组成单元，其身份分为Manager和Worker
 
 _Manager_ 负责接收用户创建的 _Service_, 并且根据 service的定义创建一组task，根据task所需分配计算资源和选择运行节点，并且将task调度到指定的节点。而manager含有以下子模块：
 
+```
+type Manager struct {
+	...
+	Dispatcher             *dispatcher.Dispatcher
+	replicatedOrchestrator *orchestrator.ReplicatedOrchestrator
+	globalOrchestrator     *orchestrator.GlobalOrchestrator
+	taskReaper             *orchestrator.TaskReaper
+	scheduler              *scheduler.Scheduler
+	allocator              *allocator.Allocator
+	...
+}
+```
+
 ##### Orchestrator(编排器)
 
 Orchestrator负责确保每个service中的task按照service定义正确的运行
@@ -57,7 +70,29 @@ Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，se
 
 #### Agent
 
-_Agent_ 负责管理Node，部署Task以及追踪Task的状态，并且将Task的状态汇报给Manager。
+_Agent_ 负责管理Node，部署Task以及追踪Task的状态，并且将Task的状态汇报给Manager。Agent包含以下子模块:
+
+```
+type Agent struct {
+	...
+	node *api.Node
+	worker   Worker
+	...
+}
+```
+
+#### api.Node(节点状态)
+
+_api.Node_ 负责向Manager定期汇报所在节点状态
 
 
+#### Worker（任务处理器）
+
+_Worker_ 处理一下工作
+* 部署和启动Task
+* Task状态追踪和汇报
+* 对于部署在本机上的task内容及状态的持久化, 
+
+
+![](agent.png)
 
