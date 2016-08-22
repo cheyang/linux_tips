@@ -1,11 +1,12 @@
-# SwarmKit的架构概览
+# SwarmKit的概念和架构
 =====================
 
 [TOC]
 
 ## 概述
 -------------
-Swarmkit是一个分布式集群调度平台,它的默认调度单元是Docker容器，但其实也可以调用自定的task。作为docker一个新的集群调度开源项目，它借鉴了许多k8s和marthon的优秀理念，也被docker公司寄予了厚望，内嵌到了docker daemon中。
+Swarmkit是一个分布式集群调度平台,它的默认调度单元是Docker容器，但其实也可以调用自定的task。作为docker一个新的集群调度开源项目，它借鉴了许多k8s和marthon的优秀理念，也被docker公司寄予了厚望，内嵌到了docker daemon中。实际上它可以被看做Docker Swarm的2.0版本。
+
 
 现在我们就来理解一下swarmd的基本概念模型和架构简介：
 
@@ -91,7 +92,7 @@ _api.Node_ 负责向Manager定期汇报所在节点实际状态. 当一个节点
 
 #### Worker(任务处理器）
 
-_Worker_ 处理以下工作
+_Worker_ 处理以下工作：
 * 部署和启动Task
 * Task状态追踪和汇报
 * 对于部署在本机上的task内容及状态的持久化, 
