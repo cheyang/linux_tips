@@ -68,6 +68,9 @@ Dispatcher直接处理与所有agent的连接， 这里包含agent的注册，se
 
 ![](manager.png)
 
+
+除此之外，Swarmkit基于Raft算法在内存中维护集群的状态一致性，在一组Manager选出一个Leader。只有Leader处理所有的请求，其它的Manager只是把请求传给leader,起到了反向代理的作用。
+
 #### Agent
 
 _Agent_ 负责管理Node，部署Task以及追踪Task的状态，并且将Task的状态汇报给Manager。Agent包含以下子模块:
@@ -83,12 +86,12 @@ type Agent struct {
 
 #### api.Node(节点状态)
 
-_api.Node_ 负责向Manager定期汇报所在节点状态
+_api.Node_ 负责向Manager定期汇报所在节点实际状态. 当一个节点的这实际状态和期望状态不一致时，Manager会自动将服务中的任务调度到其他节点，以保证服务的正常运行。
 
 
 #### Worker（任务处理器）
 
-_Worker_ 处理一下工作
+_Worker_ 处理以下工作
 * 部署和启动Task
 * Task状态追踪和汇报
 * 对于部署在本机上的task内容及状态的持久化, 
@@ -96,3 +99,8 @@ _Worker_ 处理一下工作
 
 ![](agent.png)
 
+Swarmkit提供了两个可执行程序：swarmd和swarmctl。swarmd部署在cluster中的每一个node上，彼此间互相通信，组成cluster；而swarmctl则用来控制整个集群。 下图可以清楚地描述Swarmkit的内部机制(该图出自于https://pbs.twimg.com/media/Ckb8EMLVAAQrxYH.jpg)
+
+![](swarmkit_arch.jpg)
+
+**Notice** 该图中的GPRC应该为GRPC
