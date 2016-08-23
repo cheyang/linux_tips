@@ -32,7 +32,7 @@ func main() {
 
 而在`mainCmd`的结构体定义中，最重要的就是RunE对应的方法,在mainCmd调用main函数中Execute方法时就回调了RunE方法。可以说它就是swarmd中真正的‘main函数’
 
-```golang
+```go
 mainCmd = &cobra.Command{
 		Use:          os.Args[0],
 		Short:        "Run a swarm control process",
@@ -53,10 +53,12 @@ mainCmd = &cobra.Command{
 ```
 
 而RunE中的代码做了如下工作：
-(1) 初始化一个全局的的空context, context是google官方提供的处理并发类库，它的主要应用场景是由一个请求衍生出的各个goroutine之间需要满足一定的约束关系，以实现一些诸如有效期，中止相关的goroutine，传递请求全局变量之类的功能。后面会结合本程序进行详细讲解。
+(1) 初始化一个全局的的根context（root）, context是google官方提供处理并发的类库，它可以定义由一个请求衍生出的各个goroutine之间需要满足一定的约束关系，以实现一些当根请求结束后，就可以中止与其相关goroutine的功能，同时也可以传递请求全局变量。后面会结合本程序进行详细讲解。
 ```go
 ctx := context.Background()
 ```
+如果看过`golang.org/x/net/context`的实现，就能知道作为根context，ctx是空的，无法传递值也无法被取消的。
+
 (2) 解析swarmd启动时需要的参数
 
 | 参数        |    描述          |   默认值  | 
@@ -70,13 +72,15 @@ ctx := context.Background()
 | state-dir,d    | 单个cpu的统计信息 | /swarmkitstate |
 | join-token   | 每个进程cpu用量 | 
 
-(3) 根据步骤（1）中的空context初始化可cancel的全局context，并且产生cancel函数，该cancel函数会在RunEx方法退出前调用。
+(3) 根据步骤（1）中的空context初始化可cancel的子context，并且产生cancel函数，该cancel函数会在RunEx方法退出前调用。
 
 ```go
 ctx, cancel := context.WithCancel(ctx)
 defer cancel()
 ```
-在这里，WithCancel方法本质上是创建了一个channel ｀done chan struct{}｀，并将这个channel传给了cancel函数。在后面我们会经常看到如下的方法调用
+在这里，WithCancel方法做了两件事情：
+a. 根据当前的context创建子context，并且如果当前的context是可以被cancel掉的话
+b. 创建了一个channel ｀done chan struct{}｀，并将这个channel传给了cancel函数。在后面我们会经常看到如下的方法调用
 
 ```go
 case <-ctx.Done():
@@ -131,6 +135,21 @@ n, err := agent.NewNode(&agent.NodeConfig{
 			}
 ```
 
+以下为Node的Start函数的实现，可以看到它利用golang里面的once类型来保证全局的唯一性操作，在整个操作中，首先就会利用`close(n.started)`把Noee.started这个`Channel`关掉，接着开始启动节点的初始化过程：`go n.run(ctx)`
+```go
+func (n *Node) Start(ctx context.Context) error {
+	err := errNodeStarted
+
+	n.startOnce.Do(func() {
+		close(n.started)
+		go n.run(ctx)
+		err = nil // clear error above, only once.
+	})
+
+	return err
+}
+```
+
 (6) 设置swarmd的信号捕捉，启动OS.Signal channel接收SIGINT信号，
 
 ```go
@@ -162,5 +181,16 @@ n, err := agent.NewNode(&agent.NodeConfig{
 ```
 `Node.Ready()`会返回`Node.ready`这个`Channel`
 
-当Node初始化完成后
-(8) 
+
+(8) 当Node初始化完成后, RunE方法一直就会等待在Node的Err函数里，我们可以看到只有用户的中断和context的cancel才会让swarmd退出
+
+```go
+func (n *Node) Err(ctx context.Context) error {
+	select {
+	case <-n.closed:
+		return n.err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+```

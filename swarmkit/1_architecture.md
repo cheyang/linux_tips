@@ -22,7 +22,7 @@ Replicated(重复服务模式)， 需要按照最终用户指定的数量尽可�
 
 #### Task(任务)
 
-作为Swarmkit中的基本调度单元， Task承担了创建docker容器，并且运行指定命令的责任（docker run）。实际上在未来，task的工作可以更灵活和插件化。
+作为Swarmkit中的基本调度单元， Task承担了创建docker容器，并且运行指定命令的责任（docker run)。task一旦被分配到目标机器，它就是不可修改的（immutable），它的结果只能是running或者failed。而且上在未来，task的工作可以更灵活和插件化。
 
 ### 架构综述
 
