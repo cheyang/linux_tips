@@ -89,3 +89,25 @@ L2 缓存：           256K
 L3 缓存：           12288K
 NUMA 节点0 CPU：    0-7
 ```
+
+6\. 查看cpu的信息
+
+(1). 查看物理CPU的个数
+```
+#cat /proc/cpuinfo |grep "physical id"|sort |uniq|wc -l
+ ```
+(2). 查看逻辑CPU的个数
+```
+#cat /proc/cpuinfo |grep "processor"|wc -l
+ ```
+(3). 查看CPU是几核
+```
+#cat /proc/cpuinfo |grep "cores"|uniq
+ ```
+(4). 查看CPU的主频
+```
+#cat /proc/cpuinfo |grep MHz|uniq
+```
+# cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c
+      8  Intel(R) Xeon(R) CPU            E5410   @ 2.33GHz
+(看到有8个逻辑CPU, 也知道了CPU型号)

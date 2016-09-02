@@ -52,7 +52,7 @@ mainCmd = &cobra.Command{
 			}
 ```
 
-而RunE中的代码做了如下工作：
+而RunE中的代码做了如下工作：  
 (1) 初始化一个全局的的根context（root）, context是google官方提供处理并发的类库，它可以定义由一个请求衍生出的各个goroutine之间需要满足一定的约束关系，以实现一些当根请求结束后，就可以中止与其相关goroutine的功能，同时也可以传递请求全局变量。后面会结合本程序进行详细讲解。
 ```go
 ctx := context.Background()
@@ -63,14 +63,14 @@ ctx := context.Background()
 
 | 参数        |    描述          |   默认值  | 
 | :----------| :---------------:| --------:|
+| version，v   | 显示版本号        | false    |
+| log-level, l| 日志级别，包括debug,info, warn, error, fatal    | info|
+| state-dir,d | 保存状态的文件 | ./swarmkitstate |
+| join-token  | the secret token required to join the cluster | |
 | version，v  | 显示版本号        | false    |
-| log-level, l| cpu的平均负载    | |
-| state-dir,d    | 单个cpu的统计信息 | /swarmkitstate |
-| join-token   | 每个进程cpu用量 | 
-| version，v  | 显示版本号        | false    |
-| log-level, l| cpu的平均负载    | |
-| state-dir,d    | 单个cpu的统计信息 | /swarmkitstate |
-| join-token   | 每个进程cpu用量 | 
+| engine-addr| docker engine的访问地址    | unix:///var/run/docker.sock|
+| listen-remote-api| 当swarmd监听的端口 | 0.0.0.0:4242 |
+| listen-control-api   | 每个进程cpu用量 | 
 
 (3) 根据步骤（1）中的空context初始化可cancel的子context，并且产生cancel函数，该cancel函数会在RunEx方法退出前调用。
 
@@ -78,8 +78,8 @@ ctx := context.Background()
 ctx, cancel := context.WithCancel(ctx)
 defer cancel()
 ```
-在这里，WithCancel方法做了两件事情：
-a. 根据当前的context创建子context，并且如果当前的context是可以被cancel掉的话
+在这里，WithCancel方法做了两件事情：  
+a. 根据当前的context创建子context，并且如果当前的context是可以被cancel掉的话  
 b. 创建了一个channel ｀done chan struct{}｀，并将这个channel传给了cancel函数。在后面我们会经常看到如下的方法调用
 
 ```go
@@ -135,7 +135,7 @@ n, err := agent.NewNode(&agent.NodeConfig{
 			}
 ```
 
-以下为Node的Start函数的实现，可以看到它利用golang里面的once类型来保证全局的唯一性操作，在整个操作中，首先就会利用`close(n.started)`把Noee.started这个`Channel`关掉，接着开始启动节点的初始化过程：`go n.run(ctx)`
+以下为Node的Start函数的实现，可以看到它利用golang里面的once类型来保证全局的唯一性操作，在整个操作中，首先就会利用`close(n.started)`把Noee.started这个`Channel`关掉，接着开始启动节点的初始化过程：`go n.run(ctx)`。我们会在下一篇文章中详细接受Node的具体实现。
 ```go
 func (n *Node) Start(ctx context.Context) error {
 	err := errNodeStarted
